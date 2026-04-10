@@ -1,0 +1,5 @@
+Attack,Epsilon,Acc_MLP,Acc_RF,Acc_XGB,ASR_MLP,ASR_RF,ASR_XGB,Mask
+PGD,0.01,89.44,82.18,87.19,10.56,17.82,12.81,✅ Protected
+PGD,0.05,68.32,79.2,81.33,31.68,20.8,18.67,✅ Protected
+PGD,0.1,34.92,71.59,66.15,65.08,28.41,33.85,✅ Protected
+PGD,0.2,3.26,62.59,66.09,96.74,37.41,33.91,✅ Protected

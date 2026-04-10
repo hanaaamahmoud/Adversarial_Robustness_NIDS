@@ -1,0 +1,9 @@
+# Large generated files
+*.npy
+*.pkl
+*.pth
+*.zip
+
+# Python cache
+pycache/
+.ipynb_checkpoints/
