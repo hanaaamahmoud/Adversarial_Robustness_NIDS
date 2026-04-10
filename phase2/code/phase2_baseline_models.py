@@ -1,21 +1,20 @@
 """
-PHASE 2: BASELINE MODEL TRAINING & PERFORMANCE BENCHMARKING
-Objective: Establish a robust performance baseline for the Intrusion Detection System 
-           under normal (non-adversarial) conditions across diverse architectures.
+Phase 2: Baseline Model Training & Performance Benchmarking
 
-Key Procedures:
-1. Multi-Architecture Training: Implementation of three distinct models:
-   - Random Forest (Tree-based ensemble)
-   - XGBoost (Gradient Boosting)
-   - Multi-Layer Perceptron (Neural Network / Deep Learning)
-2. Evaluation Metrics: Comprehensive assessment using Accuracy, Precision, Recall (Attack Class), 
-   and F1-Score on the KDDTest+ dataset.
-3. Blind-Spot Analysis: Using Confusion Matrices to identify inherent vulnerabilities 
-   (e.g., False Negatives in R2L and U2R attack categories) prior to adversarial exposure.
-4. Model Serialization: Exporting trained models and scalers for seamless integration 
-   into the adversarial attack phase.
+Goal:
+- Establish a reliable baseline performance for the intrusion detection system
+  under normal (non-adversarial) conditions.
+- Compare different model architectures to understand their strengths and
+  inherent limitations prior to adversarial exposure.
+
+Outputs:
+- Trained baseline models across three architectures:
+  Random Forest, XGBoost, and Multi-Layer Perceptron (MLP).
+- Quantitative evaluation metrics on the KDDTest+ dataset, including
+  Accuracy, Precision, Recall (Attack class), and F1-score.
+- Confusion matrices and summary tables highlighting model behavior and
+  identifying intrinsic blind spots (e.g., False Negatives in R2L and U2R attacks).
 """
-
 
 # ============================================================
 # PART 1: LOAD PIPELINE ARTIFACTS FROM PHASE 1

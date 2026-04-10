@@ -1,18 +1,19 @@
 """
-PHASE 4: ROBUSTNESS EVALUATION & ADVERSARIAL IMPACT ANALYSIS
-Objective: Quantify the degradation of NIDS performance under adversarial 
-           pressure and identify the most exploited network features.
+Phase 4: Robustness Evaluation & Adversarial Impact Analysis
 
-Key Procedures:
-1. Performance Decay Measurement: Calculating the drop in Accuracy and the 
-   surge in False Negatives for each model post-attack.
-2. Attack Success Rate (ASR) Quantification: Computing the percentage of 
-   malicious packets that successfully bypassed detection at each epsilon level.
-3. Feature Perturbation Profiling: Identifying which specific network features 
-   (e.g., source bytes, duration, count) were most frequently modified by the 
-   attacker to achieve evasion.
-4. Vulnerability Mapping: Correlating attack success with specific network 
-   attack categories (DoS, Probe, R2L, U2R) to pinpoint structural weaknesses.
+Goal:
+- Quantify the degradation of intrusion detection performance under
+  adversarial conditions.
+- Analyze which network features and attack categories are most heavily
+  exploited to achieve successful evasion.
+
+Outputs:
+- Detailed performance impact statistics including Attack Success Rate (ASR),
+  accuracy degradation, and false positive rate (FPR) escalation.
+- Per-category vulnerability analysis across DoS, Probe, R2L, and U2R attacks.
+- Feature perturbation analysis identifying the most influential network
+  attributes targeted by adversarial attacks.
+- Quantitative robustness ranking across all evaluated models.
 """
 
 

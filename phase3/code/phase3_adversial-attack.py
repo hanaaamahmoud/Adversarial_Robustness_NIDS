@@ -1,18 +1,18 @@
 """
-PHASE 3: ADVERSARIAL ATTACK GENERATION & SEMANTIC-CONSTRAINED EVALUATION
-Objective: Systematically assess the robustness of trained NIDS models against 
-           gradient-based evasion attacks while preserving network protocol integrity.
+Phase 3: Adversarial Attack Generation & Semantically Constrained Evaluation
 
-Key Procedures:
-1. Adversarial Crafting (White-Box): Generating adversarial perturbations using 
-   Fast Gradient Sign Method (FGSM) and Projected Gradient Descent (PGD) on the MLP model.
-2. Semantic Constraint Enforcement: Implementing an ART-compatible Boolean mask to 
-   restrict perturbations to numerical features, ensuring all generated attacks remain 
-   technically feasible in a real network environment.
-3. Transferability Assessment (Black-Box): Evaluating the effectiveness of generated 
-   adversarial examples when transferred to non-differentiable models (Random Forest and XGBoost).
-4. Epsilon Sensitivity Sweep: Measuring Attack Success Rate (ASR) across a range of 
-   perturbation budgets (epsilon: 0.01, 0.05, 0.1, 0.2) to identify the model's breaking points.
+Goal:
+- Systematically evaluate the robustness of trained NIDS models against
+  gradient-based adversarial evasion attacks.
+- Ensure that all generated adversarial examples remain semantically valid
+  and technically feasible within real network protocol constraints.
+
+Outputs:
+- Adversarial performance metrics measured across multiple perturbation budgets
+  (epsilon values).
+- Attack Success Rate (ASR) and adversarial accuracy results for FGSM and PGD attacks.
+- Comparative robustness evaluation between white-box (MLP) and black-box
+  transfer attacks on Random Forest and XGBoost models.
 """
 # ============================================================
 # PART 1: SETUP & LOAD PIPELINE ARTIFACTS

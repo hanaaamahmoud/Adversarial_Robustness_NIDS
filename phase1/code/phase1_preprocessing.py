@@ -1,16 +1,23 @@
 """
-PHASE 1: DATA PREPROCESSING & SEMANTIC-CONSTRAINED SETUP
-Objective: Transform raw NSL-KDD data into a model-ready format while 
-           ensuring adversarial realism through semantic constraints.
+Phase 1: Data Preprocessing & Pipeline Construction
 
-Key Procedures:
-1. Feature Engineering: One-Hot Encoding for categorical features & Standard Scaling.
-2. Imbalance Handling: Addressing the skewed distribution between Normal and Attack traffic.
-3. Semantic Masking: Defining a Boolean mask for numerical features to ensure 
-   that adversarial perturbations do not violate network protocol logic.
+Goal:
+- Prepare the NSL-KDD dataset for downstream machine learning tasks.
+- Encode categorical features and scale numerical features.
+- Construct an ART-compatible feature mask that enforces semantic constraints
+  (i.e., only numerical features are perturbable under adversarial attacks).
+
+Outputs:
+- Scaled training and test feature matrices.
+- Binary label arrays for model training and evaluation.
+- Pipeline artifacts (encoders, scaler, feature indices, and masks) generated
+  locally for reuse in subsequent phases (not committed to the repository).
 """
 
+# ============================================================
 # PART 1: IMPORTS & GLOBAL CONFIGURATION
+# ============================================================
+
 import numpy as np
 import pandas as pd
 
@@ -64,9 +71,11 @@ print(f" Categorical features: {len(CATEGORICAL_FEATURES)}")
 print(f" Random Seed : {RANDOM_SEED}")
 print(f" Epsilon Values : {EPSILON_VALUES}")
 
-##***************************************************************************************************
 
+# ============================================================
 # Part 2: Data Loading & Binary Labeling
+# ============================================================
+
 
 # --- 2.1 Load Raw Data ---
 train_df = pd.read_csv(TRAIN_PATH, names=COLUMN_NAMES)
@@ -115,9 +124,10 @@ print(f" X_test_raw shape : {X_test_raw.shape} → (samples × 41 features)")
 print(f" y_train shape : {y_train.shape}")
 print(f" y_test shape : {y_test.shape}")
 
-#************************************************************************************
 
+# ============================================================
 # Part 3: One-Hot Encoding
+# ============================================================
 
 # --- 3.1 Separate Categorical & Numerical Columns ---
 X_train_cat = X_train_raw[CATEGORICAL_FEATURES]
@@ -149,9 +159,11 @@ print(f" Sample encoded names : {list(encoded_cat_feature_names[:5])}")
 print(f"\n X_train_cat_encoded shape : {X_train_cat_encoded.shape}")
 print(f" X_test_cat_encoded shape : {X_test_cat_encoded.shape}")
 
-#***************************************************************************
 
+# ============================================================
 # PART 4: MIN-MAX SCALING (Numerical Features Only)
+# ============================================================
+
 
 # --- 4.1 Fit MinMaxScaler on Train ONLY ---
 # Scale all numerical features to [0,1]
@@ -192,9 +204,10 @@ print(f"   X_train_scaled shape : {X_train_scaled.shape}")
 print(f"   X_test_scaled shape  : {X_test_scaled.shape}")
 print(f"   Total feature names  : {len(feature_names_final)}")
 
-#**************************************************************************************
 
+# ============================================================
 # PART 5: SAVING PIPELINE & NUMERICAL INDICES
+# ============================================================
 
 # --- 5.1 Create Output Directory ---
 os.makedirs('pipeline', exist_ok=True)
@@ -256,8 +269,9 @@ print("\n" + "="*50)
 print("✅ PHASE 1 PIPELINE SAVED SUCCESSFULLY")
 print("="*50)
 
-#****************************************************************************************
+# ============================================================
 # PART 6: FINAL VERIFICATION
+# ============================================================
 
 # --- 6.1 Array Shapes ---
 print("\n📐 Array Shapes:")

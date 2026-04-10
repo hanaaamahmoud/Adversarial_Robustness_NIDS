@@ -1,17 +1,22 @@
 """
-PHASE 5: RESULTS VISUALIZATION & ADVERSARIAL ROBUSTNESS INSIGHTS
-Objective: Synthesize experimental findings into visual representations to 
-           derive actionable security insights and compare model resilience.
+Phase 5: Results Visualization & Adversarial Robustness Insights
 
-Key Procedures:
-1. Robustness Curve Plotting: Visualizing the inverse relationship between 
-   perturbation magnitude (Epsilon) and Model Accuracy.
-2. Attack Category Heatmaps: Mapping adversarial vulnerability across specific 
-   NSL-KDD attack classes (DoS, Probe, R2L, U2R) to identify evasion patterns.
-3. Comparative Architecture Analysis: Generating multi-model bar charts to 
-   contrast the inherent robustness of Tree-based models vs. Neural Networks.
-4. Summary Reporting: Compiling final Attack Success Rate (ASR) tables and 
-   extracting the core conclusion: "High Accuracy does not guarantee Security."
+Goal:
+- Synthesize experimental findings into clear and interpretable visual
+  representations.
+- Facilitate comparative analysis of model robustness and extract
+  actionable security insights.
+
+Outputs:
+- Robustness curves illustrating the relationship between perturbation
+  magnitude (epsilon) and model accuracy.
+- Heatmaps visualizing adversarial vulnerability across different attack
+  categories.
+- Comparative plots highlighting robustness differences between
+  tree-based models and neural networks.
+- Final summary figures consolidating key conclusions, including the core
+  insight that high classification accuracy does not necessarily imply
+  adversarial robustness.
 """
 
 # STEP 1.1: IMPORTS
