@@ -56,7 +56,7 @@ xgb_model.load_model('pipeline/xgb_model.json')
 
 mlp_model = joblib.load('pipeline/mlp_model.pkl')
 
-print("✅ PART 1 COMPLETE — SETUP READY")
+print("PART 1 COMPLETE — SETUP READY")
 
 # ============================================================
 # PART 2: MODEL WRAPPING WITH IBM ART

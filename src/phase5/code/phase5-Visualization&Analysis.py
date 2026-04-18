@@ -33,12 +33,9 @@ import warnings
 warnings.filterwarnings('ignore')
 
 # STEP 1.2: GLOBAL STYLE CONFIGURATION
-# Cybersecurity dark theme — consistent across ALL plots
-# ============================================================
 
-# --- Color Palette ---
 COLORS = {
-'bg_dark' : '#0D1B2A', # slide/figure background
+'bg_dark' :'#0D1B2A', # slide/figure background
 'bg_panel' : '#1A2940', # panel/axes background
 'grid' : '#2A3F5F', # grid lines
 'text_white' : '#FFFFFF',
@@ -53,7 +50,7 @@ COLORS = {
 'safe_green' : '#00C853',
 }
 
-# --- Matplotlib Global Theme ---
+
 plt.rcParams.update({
 'figure.facecolor' : COLORS['bg_dark'],
 'axes.facecolor' : COLORS['bg_panel'],
@@ -79,8 +76,6 @@ plt.rcParams.update({
 })
 
 # STEP 1.3: GLOBAL CONSTANTS
-# Must match Phase 1–4 exactly — never change these
-# ============================================================
 EPSILON_VALUES = [0.01, 0.05, 0.1, 0.2]
 MODELS = ['RF', 'XGB', 'MLP']
 CATEGORIES = ['DoS', 'Probe', 'R2L', 'U2R']
@@ -93,71 +88,60 @@ BASELINE_ACC = {
 }
 
 # STEP 1.4: OUTPUT DIRECTORY
-# All figures saved here — ready for slides & report
-# ============================================================
+
 OUTPUT_DIR = 'phase5_figures'
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 print(f"  Output directory ready: {OUTPUT_DIR}/")
 
 # STEP 1.5: LOAD ALL DATA FILES
-# ============================================================
-
-# --- Path Definitions ---
 PIPELINE_PATH = '/kaggle/input/datasets/hanaaelganzory/pipeline-backup-correct'
 PHASE4_PATH   = '/kaggle/working/phase4_outputs'
 
-# --- Master results (Phase 3 outputs) ---
 all_results  = pd.read_csv(f'{PIPELINE_PATH}/all_results.csv')
-
-# --- Phase 4 deep-dive outputs ---
 per_class_df = pd.read_csv(f'{PHASE4_PATH}/phase4_per_class_asr.csv')
 feat_pert_df = pd.read_csv(f'{PHASE4_PATH}/phase4_feature_perturbation.csv')
 ranking_df   = pd.read_csv(f'{PHASE4_PATH}/phase4_ranking.csv')
 fpr_df       = pd.read_csv(f'{PHASE4_PATH}/phase4_fpr.csv')
 
-# STEP 1.6: VERIFICATION
-# ============================================================
 print("=" * 50)
 print("  PHASE 5 — PART 1: DATA LOADING VERIFICATION")
 print("=" * 50)
 
-print(f"\n📂 Files Loaded:")
-print(f"   all_results       : {all_results.shape}   ✅")
-print(f"   per_class_df      : {per_class_df.shape}  ✅")
-print(f"   feat_pert_df      : {feat_pert_df.shape}  ✅")
-print(f"   ranking_df        : {ranking_df.shape}    ✅")
-print(f"   fpr_df            : {fpr_df.shape}        ✅")
+print(f"\n Files Loaded:")
+print(f"   all_results       : {all_results.shape}   ")
+print(f"   per_class_df      : {per_class_df.shape} ")
+print(f"   feat_pert_df      : {feat_pert_df.shape} ")
+print(f"   ranking_df        : {ranking_df.shape}    ")
+print(f"   fpr_df            : {fpr_df.shape}        ")
 
-print(f"\n📊 Robustness Ranking:")
+print(f"\n Robustness Ranking:")
 for _, row in ranking_df.iterrows():
     print(f"   #{int(row['Rank'])} {row['Model']:<4} "
           f"→ Score: {row['Robustness_Score']:.4f} "
           f"| Baseline: {row['Baseline_Acc']}% "
           f"| ASR(PGD@0.2): {row['ASR_PGD_0.2']}%")
 
-print(f"\n🎯 Attack Categories in per_class_df:")
+print(f"\n Attack Categories in per_class_df:")
 print(f"   {per_class_df['Category'].unique().tolist()}")
 
-print(f"\n📈 all_results preview:")
+print(f"\n all_results preview:")
 print(all_results.to_string(index=False))
 
-print(f"\n✅ Color Palette : Cybersecurity Dark Theme")
-print(f"✅ Output Dir    : {OUTPUT_DIR}/")
-print(f"✅ DPI           : {plt.rcParams['figure.dpi']}")
+print(f"\n Color Palette : Cybersecurity Dark Theme")
+print(f" Output Dir    : {OUTPUT_DIR}/")
+print(f" DPI           : {plt.rcParams['figure.dpi']}")
 
 print("\n" + "=" * 50)
-print("✅ PART 1 — SETUP COMPLETE. READY FOR PART 2.")
+print(" PART 1 — SETUP COMPLETE. READY FOR PART 2.")
 print("=" * 50)
 
 import pandas as pd
 
 all_results = pd.read_csv('/kaggle/input/datasets/hanaaelganzory/pipeline-backup-correct/all_results.csv')
-print(f"✅ all_results.csv، shape: {all_results.shape}")
+print(f" all_results.csv، shape: {all_results.shape}")
 
 # ============================================================
 # OVERRIDE: Switch ALL figures to White / Light Theme
-# Run this BEFORE Parts 2, 3, 4, 5, 6 — then re-run each part
-# ============================================================
 
 COLORS = {
     'bg_dark'     : '#FFFFFF',
@@ -211,17 +195,15 @@ plt.rcParams.update({
     'figure.dpi'         : 150,
 })
 
-print("✅ Light Theme Applied Successfully\n")
-print("📋 Now re-run in order:")
-print("   ▶ Part 2 — ASR Curves")
-print("   ▶ Part 3 — Heatmaps")
-print("   ▶ Part 4 — Feature Profiling")
-print("   ▶ Part 5 — Radar Chart")
-print("   ▶ Part 6 — FPR & Scatter")
-print("\n✅ All figures will be saved with a white background")
+print("Light Theme Applied Successfully\n")
+print(" Now re-run in order:")
+print("    Part 2 — ASR Curves")
+print("    Part 3 — Heatmaps")
+print("    Part 4 — Feature Profiling")
+print("    Part 5 — Radar Chart")
+print("    Part 6 — FPR & Scatter")
+print("\n All figures will be saved with a white background")
 
-# STEP 2.1: PREPARE DATA
-# ============================================================
 fgsm_data = all_results[all_results['Attack'] == 'FGSM'].sort_values('Epsilon')
 pgd_data = all_results[all_results['Attack'] == 'PGD'].sort_values('Epsilon')
 
@@ -301,14 +283,14 @@ for model in MODELS:
         zorder=3
     )
 
-    # Shaded area between curves
+
     ax.fill_between(
         EPSILON_VALUES, y_fgsm, y_pgd,
         alpha=0.12,
         color=model_colors[model]
     )
 
-     # 50% danger threshold
+
     ax.axhline(
         y=50,
         color=COLORS['danger_red'],
@@ -318,7 +300,7 @@ for model in MODELS:
         label='50% ASR Threshold'
     )
 
-    # Value labels on points
+
     for eps, vf, vp in zip(EPSILON_VALUES, y_fgsm, y_pgd):
         ax.annotate(
             f'{vf:.1f}%',
@@ -341,7 +323,7 @@ for model in MODELS:
             fontweight='bold'
         )
 
-        # Axes formatting
+
     ax.set_xlim(-0.01, 0.22)
     ax.set_ylim(-5, 110)
     ax.set_xticks(EPSILON_VALUES)
@@ -361,7 +343,7 @@ for model in MODELS:
     ax.grid(True, alpha=0.3)
     ax.legend(loc='upper left', fontsize=10, framealpha=0.8)
 
-    # Baseline badge
+
     ax.text(
         0.98, 0.97,
         f'Baseline Acc: {BASELINE_ACC[model]}%',
@@ -394,8 +376,6 @@ for model in MODELS:
     print("-" * 60)
 
 # STEP 2.4: COMBINED FIGURE — ALL 3 MODELS SIDE BY SIDE
-# Clean white version with improved annotations
-# ============================================================
 
 fig, axes = plt.subplots(1, 3, figsize=(18, 5), sharey=True)
 fig.patch.set_facecolor('white')
@@ -433,14 +413,14 @@ for ax, model in zip(axes, MODELS):
         zorder=3
     )
 
-    # Shaded difference
+    
     ax.fill_between(
         EPSILON_VALUES, y_fgsm, y_pgd,
         alpha=0.12,
         color=model_colors[model]
     )
 
-     # 50% threshold
+   
     ax.axhline(
         y=50,
         color='red',
@@ -449,10 +429,10 @@ for ax, model in zip(axes, MODELS):
         alpha=0.6
     )
 
-    # ===== Improved value labels (NO overlap) =====
+   
     for eps, vf, vp in zip(EPSILON_VALUES, y_fgsm, y_pgd):
 
-        # FGSM label (higher offset)
+   
         ax.annotate(
             f'{vf:.0f}%',
             xy=(eps, vf),
@@ -469,7 +449,7 @@ for ax, model in zip(axes, MODELS):
             )
         )
 
-        # PGD label (lower offset)
+   
         ax.annotate(
             f'{vp:.0f}%',
             xy=(eps, vp),
@@ -524,7 +504,7 @@ for ax, model in zip(axes, MODELS):
     ax.grid(True, linestyle='--', alpha=0.25)
     ax.legend(fontsize=9, frameon=False)
 
-      # Baseline badge (clean white)
+   
     ax.text(
         0.97, 0.97,
         f'Baseline: {BASELINE_ACC[model]}%',
@@ -541,10 +521,10 @@ for ax, model in zip(axes, MODELS):
         )
     )
 
-# Shared Y label
+
 axes[0].set_ylabel('Attack Success Rate (ASR %)', fontsize=11)
 
-# Figure title
+
 fig.suptitle(
     'Phase 5 — Robustness Curves: ASR vs. Perturbation Budget (ε)',
     fontsize=14,
@@ -565,8 +545,6 @@ plt.show()
 
 print(f"Combined figure saved → {fname_combined}")
 
-# STEP 2.5: SUMMARY
-# ============================================================
 print("\n" + "=" * 60)
 print(" PHASE 5 — PART 2: ASR CURVES COMPLETE")
 print("=" * 60)
@@ -583,20 +561,12 @@ print("\n" + "=" * 60)
 print("  PART 2 COMPLETE — READY FOR PART 3 (Heatmap).")
 print("=" * 60)
 
-# Two Heatmaps:
-# Heatmap A: ASR @ ε=0.2 per (Model × Category) — FGSM vs PGD
-# Heatmap B: Critical Threshold (at which ε does ASR hit 50%)
-# ============================================================
-
 # ============================================================
 # STEP 3.1: PREPARE DATA — ASR @ ε=0.2
 # ============================================================
 
-# Filter ε = 0.2 only
-per_class_02 = per_class_df[per_class_df['Epsilon'] == 0.2].copy()
 
-# Build matrices: rows = Categories, cols = Models
-# Separate FGSM and PGD
+per_class_02 = per_class_df[per_class_df['Epsilon'] == 0.2].copy()
 def build_asr_matrix(attack_type):
 
     subset = per_class_02[per_class_02['Attack'] == attack_type]
@@ -615,13 +585,12 @@ def build_asr_matrix(attack_type):
     return matrix
 
 
-# ASR matrices at ε = 0.2
+
 fgsm_matrix = build_asr_matrix('FGSM')
 pgd_matrix  = build_asr_matrix('PGD')
 
 # ============================================================
 # STEP 3.2: PREPARE DATA — CRITICAL THRESHOLD
-# At which ε does ASR first exceed 50%?
 # ============================================================
 
 def build_threshold_matrix(attack_type):
@@ -631,7 +600,7 @@ def build_threshold_matrix(attack_type):
         label_matrix : string labels (for annotation)
     """
 
-    # Numeric encoding for heatmap colors
+    
     thresh_map = {
         0.01: 1,
         0.05: 2,
@@ -671,7 +640,7 @@ crossed = subset[subset[col] >= 50]
     return matrix.astype(float), label_matrix
 
 
-# Build threshold matrices
+
 fgsm_thresh_num, fgsm_thresh_lbl = build_threshold_matrix('FGSM')
 pgd_thresh_num,  pgd_thresh_lbl  = build_threshold_matrix('PGD')
 
@@ -687,24 +656,16 @@ print(f"\n PGD Critical Thresholds:\n{pgd_thresh_lbl}")
 
 # ============================================================
 # STEP 3.3: CUSTOM COLORMAPS
-# Red = high ASR (dangerous), Green = low ASR (safe)
 # ============================================================
 
 from matplotlib.colors import LinearSegmentedColormap
 
-# ASR heatmap: green → yellow → red
 asr_cmap = LinearSegmentedColormap.from_list(
     'asr_cmap',
     ['#2166AC', '#F7F7F7', '#D6604D'],
     N=256
 )
 
-# Threshold heatmap:
-# Inverted meaning:
-#   Low ε threshold → model collapses early → more dangerous
-#   High ε threshold → more robust → safer
-# Colors: red (early collapse) → yellow → green (resistant)
-thresh_cmap = LinearSegmentedColormap.from_list(
     'thresh_cmap',
     ['#FF1744', '#FFD600', '#00C853'],
     N=256
@@ -712,7 +673,6 @@ thresh_cmap = LinearSegmentedColormap.from_list(
 
 # ============================================================
 # STEP 3.4: HEATMAP A — ASR @ ε = 0.2 (FGSM vs PGD)
-# Clean Academic Version (White background, Blues colormap)
 # ============================================================
 
 fig, axes = plt.subplots(1, 2, figsize=(14, 5))
@@ -736,7 +696,7 @@ for matrix, title, ax in heatmap_data:
         vmax=100
     )
 
-    # Cell annotations
+
     for i in range(len(CATEGORIES)):
         for j in range(len(MODELS)):
             val = data[i, j]
@@ -773,7 +733,7 @@ for matrix, title, ax in heatmap_data:
         pad=10
     )
 
-    # Grid-like separation
+
     ax.set_xticks(np.arange(-.5, len(MODELS), 1), minor=True)
     ax.set_yticks(np.arange(-.5, len(CATEGORIES), 1), minor=True)
     ax.grid(which='minor', color='white', linestyle='-', linewidth=2)
@@ -783,7 +743,7 @@ for matrix, title, ax in heatmap_data:
     cbar = plt.colorbar(im, ax=ax, fraction=0.046, pad=0.04)
     cbar.set_label('ASR (%)', fontsize=10)
 
-# Figure title
+
 fig.suptitle(
     'Per-Class Vulnerability Heatmap — ASR at ε = 0.2',
     fontsize=14,
@@ -806,8 +766,6 @@ print(f"Saved → {fname_a}")
 
 # ============================================================
 # STEP 3.5: HEATMAP B — CRITICAL THRESHOLD
-# Clean Academic Version (White background, Blues colormap)
-# At which ε does each category first exceed 50% ASR?
 # ============================================================
 
 fig, axes = plt.subplots(1, 2, figsize=(14, 5))
@@ -833,7 +791,7 @@ for num_mat, lbl_mat, title, ax in thresh_data:
         vmax=5
     )
 
-    # Cell annotations
+
     for i in range(len(CATEGORIES)):
         for j in range(len(MODELS)):
             lbl = lbl_mat.iloc[i, j]
@@ -847,7 +805,6 @@ for num_mat, lbl_mat, title, ax in thresh_data:
                 fontsize=11,
                 color='black'
             )
-  # Axes formatting
     ax.set_xticks(range(len(MODELS)))
     ax.set_yticks(range(len(CATEGORIES)))
 
@@ -889,7 +846,7 @@ for num_mat, lbl_mat, title, ax in thresh_data:
         fontsize=10
     )
 
-    # Figure title (neutral & academic)
+    
 fig.suptitle(
     'Critical Threshold Heatmap — First ε Where ASR ≥ 50%',
     fontsize=14,
@@ -931,9 +888,6 @@ CAPTION_HEATMAP_B = (
 print(f"\n  Caption A:\n {CAPTION_HEATMAP_A}")
 print(f"\n  Caption B:\n {CAPTION_HEATMAP_B}")
 
-# ============================================================
-# STEP 3.7: SUMMARY
-# ============================================================
 
 print("\n" + "=" * 60)
 print(" PHASE 5 — PART 3: HEATMAPS COMPLETE")
@@ -953,24 +907,15 @@ print("\n" + "=" * 60)
 print("  PART 3 COMPLETE — READY FOR PART 4 (Feature Profiling).")
 print("=" * 60)
 
-# ============================================================
-# Horizontal Bar Chart — Top 10 most perturbed features
-# Shows: Normalized Delta (Δ) + Physical Units
-# Side-by-side: FGSM vs PGD at ε = 0.2
-# ============================================================
+
 
 # ============================================================
 # STEP 4.1: PREPARE DATA — TOP 10 FEATURES
-# Sorted by PGD_Delta_Norm (strongest perturbation)
 # ============================================================
 
-# Select top 10 most perturbed features (by PGD)
 top10 = feat_pert_df.nlargest(10, 'PGD_Delta_Norm').copy()
-
-# Sort ascending for horizontal bar plotting
 top10 = top10.sort_values('PGD_Delta_Norm', ascending=True)
 
-# Extract values
 features   = top10['Feature'].tolist()
 fgsm_delta = top10['FGSM_Delta_Norm'].tolist()
 pgd_delta  = top10['PGD_Delta_Norm'].tolist()
@@ -981,10 +926,8 @@ pgd_phys  = top10['PGD_Physical'].tolist()
 fgsm_dir = top10['FGSM_Direction'].tolist()
 pgd_dir  = top10['PGD_Direction'].tolist()
 
-# Clean feature names for display
 feat_labels = [f.replace('_', ' ') for f in features]
 
-# Console sanity check
 print("  Top 10 features prepared\n")
 print(f"{'Feature':<30} {'FGSM Δ':>10} {'PGD Δ':>10}")
 print("-" * 54)
@@ -995,7 +938,6 @@ for f, fd, pd_ in zip(features, fgsm_delta, pgd_delta):
 
     # ============================================================
 # STEP 4.2: PLOT A — NORMALIZED DELTA (Clean & Minimal Version)
-# Reduced visual clutter — Academic / GitHub style
 # ============================================================
 
 fig, ax = plt.subplots(figsize=(11, 7))
@@ -1025,7 +967,7 @@ ax.barh(
     label='FGSM'
 )
 
-# Value labels (PGD only — reduce clutter)
+
 for i, val in enumerate(pgd_delta):
     ax.text(
         val + 0.003,
@@ -1084,11 +1026,11 @@ plt.savefig(
 )
 
 plt.show()
-print(f"Saved → {fname_norm}")# Prepare Top-5 features for Phase 5 plots (from Phase 4 outputs)
+print(f"Saved → {fname_norm}")
 import pandas as pd
 import numpy as np
 
-# Load Phase 4 feature perturbation results
+
 feat_pert_df = pd.read_csv("/kaggle/working/phase4_outputs/phase4_feature_perturbation.csv")
 
 # Select Top-5 features by PGD normalized delta
@@ -1103,7 +1045,6 @@ print("feat5 prepared for Phase 5 plots ✅")
 
 # ============================================================
 # STEP 4.3: PLOT B — PHYSICAL UNITS (Clean & Minimal Version)
-# Top 5 features — Physical perturbation magnitude
 # ============================================================
 
 fig, ax = plt.subplots(figsize=(11, 5))
@@ -1133,7 +1074,6 @@ ax.barh(
     label='FGSM'
 )
 
-# Value labels (PGD only — reduce clutter)
 for i, val in enumerate(pgd_p5):
     if val >= 1:
         label = f'{val:,.0f}'
@@ -1148,7 +1088,7 @@ for i, val in enumerate(pgd_p5):
         fontsize=8,
         color='black'
     )
-# Define physical units for features
+
 UNITS = {
     'num root': 'count',
     'su attempted': 'binary (0/1)',
@@ -1156,7 +1096,7 @@ UNITS = {
     'srv diff host rate': 'rate [0–1]',
     'is host login': 'binary (0/1)',
 }
-# Y-axis labels with physical units (clean)
+
 y_labels_with_units = [
     f'{f}  [{UNITS.get(f, "value")}]' for f in feat5
 ]
@@ -1251,7 +1191,6 @@ print("=" * 60)
 
 models_ordered = ['RF', 'XGB', 'MLP']
 
-# Extract FPR values
 fpr_base = [
     fpr_df[fpr_df['Model'] == m]['FPR_Baseline'].values[0]
     for m in models_ordered
@@ -1289,7 +1228,6 @@ for m, b, f, p, inc in zip(
 
 # ============================================================
 # STEP 6.2: PLOT A — FPR COMPARISON (Clean & Minimal Version)
-# Reduced visual clutter — Academic / GitHub style
 # ============================================================
 
 fig, ax = plt.subplots(figsize=(10, 5))
@@ -1308,7 +1246,6 @@ ax.bar(
     label='Baseline'
 )
 
-# After PGD (worst case — focus on impact)
 ax.bar(
     x + width/2,
     fpr_pgd,
@@ -1317,7 +1254,7 @@ ax.bar(
     label='After PGD (ε = 0.2)'
 )
 
-# Value labels (PGD only)
+
 for i, val in enumerate(fpr_pgd):
     ax.text(
         x[i] + width/2,
@@ -1364,7 +1301,6 @@ print(f"Saved → {fname_fpr}")
 
 # ============================================================
 # STEP 6.3: ACCURACY vs ASR (Clean & Minimal Comparison)
-# Replaces scatter plot with simple bar comparison
 # ============================================================
 
 import numpy as np
@@ -1528,10 +1464,9 @@ COLORS_LIGHT = {
     'safe_green'  : '#2E7D32',
 }
 
-# Override global COLORS dictionary
 COLORS = COLORS_LIGHT
 
-# Update matplotlib defaults for light theme
+
 plt.rcParams.update({
     'figure.facecolor'   : COLORS['bg_dark'],
     'axes.facecolor'     : COLORS['bg_panel'],
@@ -1547,7 +1482,7 @@ plt.rcParams.update({
     'text.color'         : COLORS['text_white'],
 })
 
-print("✅ Theme switched to Light / White — Ready for Part 7")
+print(" Theme switched to Light / White  Ready for Part 7")
 
 # ============================================================
 # STEP 7.1: FINAL SUMMARY DASHBOARD (Clean & Minimal Version)
@@ -1560,9 +1495,9 @@ from matplotlib.gridspec import GridSpec
 # ------------------------
 # COLOR PALETTE (FIXED)
 # ------------------------
-BASE_COLOR   = '#aec7e8'   # light blue (baseline / benign)
-ATTACK_COLOR = '#1f77b4'   # dark blue (attack / worst-case)
-ACCENT_COLOR = '#4c72b0'   # titles / emphasis
+BASE_COLOR   = '#aec7e8'   
+ATTACK_COLOR = '#1f77b4'   
+ACCENT_COLOR = '#4c72b0'   
 
 # ------------------------
 # FIGURE & LAYOUT
@@ -1765,7 +1700,6 @@ print(f"Saved → {fname_dashboard}")
 
 # ============================================================
 # STEP 7.2: COMPLETE FIGURES INDEX
-# Full list of all figures with captions — ready for report
 # ============================================================
 
 import os
