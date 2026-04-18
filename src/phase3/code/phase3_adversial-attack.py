@@ -18,7 +18,7 @@ Outputs:
 # PART 1: SETUP & LOAD PIPELINE ARTIFACTS
 # ============================================================
 
-# Install IBM ART (run once)
+
 !pip install adversarial-robustness-toolbox -q
 
 import numpy as np
@@ -37,18 +37,18 @@ EPSILON_VALUES = [0.01, 0.05, 0.1, 0.2]
 PGD_ITERATIONS = 10
 PGD_ALPHA = 0.01
 
-# Load arrays
+
 X_train_scaled = np.load('pipeline/X_train_scaled.npy')
 X_test_scaled  = np.load('pipeline/X_test_scaled.npy')
 y_train = np.load('pipeline/y_train.npy')
 y_test  = np.load('pipeline/y_test.npy')
 
-# Load ART mask and metadata
+
 numerical_mask_bool = joblib.load('pipeline/numerical_mask_bool.pkl')
 feature_names_final = joblib.load('pipeline/feature_names_final.pkl')
 test_attack_categories = joblib.load('pipeline/test_attack_categories.pkl')
 
-# Load models
+
 rf_model  = joblib.load('pipeline/rf_model.pkl')
 
 xgb_model = XGBClassifier()
@@ -79,7 +79,7 @@ art_xgb = XGBoostClassifier(
     nb_classes=2
 )
 
-# Wrap MLP (sklearn)
+# Wrap MLP 
 art_mlp = SklearnClassifier(
     model=mlp_model,
     clip_values=(0, 1)
@@ -90,13 +90,13 @@ pred_rf  = np.argmax(art_rf.predict(X_test_scaled), axis=1)
 pred_xgb = np.argmax(art_xgb.predict(X_test_scaled), axis=1)
 pred_mlp = np.argmax(art_mlp.predict(X_test_scaled), axis=1)
 
-print("✅ PART 2 COMPLETE — MODELS WRAPPED & VERIFIED")
+print(" PART 2 COMPLETE — MODELS WRAPPED & VERIFIED")
 
 # ============================================================
 # PART 3: FGSM ATTACK
 # ============================================================
 
-# Select correctly classified attack samples
+
 correct_attack_idx = np.where(
     (y_test == 1) &
     (np.argmax(art_mlp.predict(X_test_scaled), axis=1) == 1)
@@ -135,7 +135,7 @@ for eps in EPSILON_VALUES:
 fgsm_results_df = pd.DataFrame(fgsm_results)
 fgsm_results_df.to_csv('pipeline/fgsm_results.csv', index=False)
 
-print("✅ PART 3 COMPLETE — FGSM GENERATED")
+print(" PART 3 COMPLETE — FGSM GENERATED")
 
 # ============================================================
 # PART 4: PGD ATTACK
@@ -172,7 +172,7 @@ for eps in EPSILON_VALUES:
 pgd_results_df = pd.DataFrame(pgd_results)
 pgd_results_df.to_csv('pipeline/pgd_results.csv', index=False)
 
-print("✅ PART 4 COMPLETE — PGD GENERATED")
+print(" PART 4 COMPLETE — PGD GENERATED")
 
 # ============================================================
 # PART 5: RESULTS COLLECTION & SUMMARY
@@ -188,5 +188,5 @@ all_results_df = pd.concat(
 
 all_results_df.to_csv('pipeline/all_results.csv', index=False)
 
-print("✅ PART 5 COMPLETE — PHASE 3 FINISHED")
+print(" PART 5 COMPLETE — PHASE 3 FINISHED")
 

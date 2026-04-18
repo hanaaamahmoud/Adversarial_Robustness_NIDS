@@ -22,24 +22,21 @@ Outputs:
 import numpy as np
 import joblib
 
-# Load preprocessed feature arrays
+
 X_train_scaled = np.load('pipeline/X_train_scaled.npy')
 X_test_scaled  = np.load('pipeline/X_test_scaled.npy')
 
-# Load labels
 y_train = np.load('pipeline/y_train.npy')
 y_test  = np.load('pipeline/y_test.npy')
 
-# Load numerical mask (for ART consistency)
+
 numerical_mask_bool = joblib.load('pipeline/numerical_mask_bool.pkl')
 
-# Load feature names
 feature_names_final = joblib.load('pipeline/feature_names_final.pkl')
 
-# Load attack categories (for blind-spot analysis)
 test_attack_categories = joblib.load('pipeline/test_attack_categories.pkl')
 
-print("✅ PART 1 COMPLETE — DATA LOADED SUCCESSFULLY")
+print(" PART 1 COMPLETE — DATA LOADED SUCCESSFULLY")
 
 # ============================================================
 # PART 2: RANDOM FOREST CLASSIFIER
@@ -52,7 +49,6 @@ import seaborn as sns
 import joblib
 import numpy as np
 
-# Model initialization
 rf_model = RandomForestClassifier(
     n_estimators=200,
     max_depth=20,
@@ -78,10 +74,9 @@ sns.heatmap(cm_rf, annot=True, fmt='d', cmap='Blues')
 plt.title('Random Forest — Confusion Matrix')
 plt.show()
 
-# Save model
 joblib.dump(rf_model, 'pipeline/rf_model.pkl')
 
-print("✅ PART 2 COMPLETE — RANDOM FOREST")
+print(" PART 2 COMPLETE — RANDOM FOREST")
 
 # ============================================================
 # PART 3: XGBOOST CLASSIFIER
@@ -93,7 +88,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-# Compute scale_pos_weight
 normal_count = (y_train == 0).sum()
 attack_count = (y_train == 1).sum()
 scale_pos_weight = normal_count / attack_count
@@ -126,10 +120,10 @@ sns.heatmap(cm_xgb, annot=True, fmt='d', cmap='Oranges')
 plt.title('XGBoost — Confusion Matrix')
 plt.show()
 
-# Save model
+
 xgb_model.save_model('pipeline/xgb_model.json')
 
-print("✅ PART 3 COMPLETE — XGBOOST")
+print(" PART 3 COMPLETE — XGBOOST")
 
 # ============================================================
 # PART 4: MLP CLASSIFIER
@@ -168,10 +162,10 @@ sns.heatmap(cm_mlp, annot=True, fmt='d', cmap='Greens')
 plt.title('MLP — Confusion Matrix')
 plt.show()
 
-# Save model
+
 joblib.dump(mlp_model, 'pipeline/mlp_model.pkl')
 
-print("✅ PART 4 COMPLETE — MLP")
+print(" PART 4 COMPLETE — MLP")
 
 # ============================================================
 # PART 5: SUMMARY TABLE & COMPARISON
@@ -203,4 +197,4 @@ print(summary_df)
 
 summary_df.to_csv('pipeline/phase2_summary.csv', index=False)
 
-print("✅ PART 5 COMPLETE — PHASE 2 FINISHED")
+print(" PART 5 COMPLETE — PHASE 2 FINISHED")

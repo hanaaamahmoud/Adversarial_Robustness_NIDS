@@ -17,9 +17,6 @@ Outputs:
 """
 
 
-# PART 0: IMPORTS & SETUP
-# ============================================================
-
 !pip install adversarial-robustness-toolbox
 import numpy as np
 import pandas as pd
@@ -59,28 +56,28 @@ print(f"  Output path   : {OUTPUT_PATH}")
 # PART 2: LOAD ALL ARTIFACTS FROM PHASE 1, 2, 3
 # ============================================================
 
-# --- 2.1 Feature Arrays ---
+#Feature Arrays ---
 X_train_scaled = np.load(f'{PIPELINE_PATH}/X_train_scaled.npy')
 X_test_scaled  = np.load(f'{PIPELINE_PATH}/X_test_scaled.npy')
 y_train        = np.load(f'{PIPELINE_PATH}/y_train.npy')
 y_test         = np.load(f'{PIPELINE_PATH}/y_test.npy')
 
-# --- 2.2 Pipeline Artifacts ---
+#Pipeline Artifacts ---
 scaler               = joblib.load(f'{PIPELINE_PATH}/minmax_scaler.pkl')
 encoder              = joblib.load(f'{PIPELINE_PATH}/onehot_encoder.pkl')
 numerical_mask_bool  = joblib.load(f'{PIPELINE_PATH}/numerical_mask_bool.pkl')
 feature_names_final  = joblib.load(f'{PIPELINE_PATH}/feature_names_final.pkl')
 test_attack_cats     = joblib.load(f'{PIPELINE_PATH}/test_attack_categories.pkl')
-# --- 2.3 Adversarial Examples from Phase 3 (ε=0.2 only) ---
+
 X_adv_fgsm_02 = np.load(f'{PIPELINE_PATH}/X_adv_fgsm_02.npy')
 X_adv_pgd_02  = np.load(f'{PIPELINE_PATH}/X_adv_pgd_02.npy')
 
-# --- 2.4 Baseline Predictions from Phase 2 ---
+
 y_pred_rf  = np.load(f'{PIPELINE_PATH}/y_pred_rf.npy')
 y_pred_xgb = np.load(f'{PIPELINE_PATH}/y_pred_xgb.npy')
 y_pred_mlp = np.load(f'{PIPELINE_PATH}/y_pred_mlp.npy')
 
-print("\n✅ All artifacts loaded successfully")
+print("\n All artifacts loaded successfully")
 print(f"   X_test_scaled shape  : {X_test_scaled.shape}")
 print(f"   X_adv_fgsm_02 shape  : {X_adv_fgsm_02.shape}")
 print(f"   X_adv_pgd_02  shape  : {X_adv_pgd_02.shape}")
@@ -89,13 +86,13 @@ print(f"   test_attack_cats     : {test_attack_cats.nunique()} unique categories
 #Part 3
 # ============================================================
 
-# --- 3.1 Load sklearn RF & MLP ---
+#Load sklearn RF & MLP ---
 rf_model  = joblib.load(f'{PIPELINE_PATH}/rf_model.pkl')
 mlp_model = joblib.load(f'{PIPELINE_PATH}/mlp_model.pkl')
-# --- 3.2 Load XGBoost (native loader) ---
+#Load XGBoost (native loader) ---
 xgb_model = XGBClassifier()
 xgb_model.load_model(f'{PIPELINE_PATH}/xgb_model.json')
-# --- 3.3 Rebuild PyTorch MLP (identical to Phase 3) ---
+#3.3 Rebuild PyTorch MLP (identical to Phase 3) ---
 class MLPNet(nn.Module):
     def __init__(self, input_dim=122, h1=128, h2=64, num_classes=2):
         super().__init__()
@@ -113,7 +110,7 @@ pt_mlp.load_state_dict(
     torch.load(f'{PIPELINE_PATH}/pt_mlp.pth', map_location=device)
 )
 pt_mlp.eval()
-# --- 3.4 Wrap with ART ---
+#3.4 Wrap with ART ---
 art_rf  = SklearnClassifier(model=rf_model,  clip_values=(0, 1))
 art_xgb = XGBoostClassifier(model=xgb_model, clip_values=(0, 1),
                               nb_features=122, nb_classes=2)
@@ -126,13 +123,11 @@ art_pt_mlp   = PyTorchClassifier(
     device_type='gpu' if torch.cuda.is_available() else 'cpu'
 )
 
-print(f"\n✅ All models loaded & wrapped")
+print(f"\n All models loaded & wrapped")
 print(f"   Device: {device}")
 
 # PART 4: RECONSTRUCT correct_attack_idx (CRITICAL)
-# Must match EXACTLY the indices used in Phase 3
-# Logic: samples that PyTorch MLP correctly classified as Attack
-# ============================================================
+
 X_test_float32 = X_test_scaled.astype(np.float32)
 y_pred_clean_pt = np.argmax(art_pt_mlp.predict(X_test_float32), axis=1)
 
@@ -144,13 +139,12 @@ X_attacks_clean  = X_test_float32[correct_attack_idx]
 y_attacks_clean  = y_test[correct_attack_idx]
 cats_attacked    = test_attack_cats.iloc[correct_attack_idx].reset_index(drop=True)
 
-print(f"\n✅ correct_attack_idx reconstructed")
+print(f"\n correct_attack_idx reconstructed")
 print(f"   Total attacks in test     : {(y_test==1).sum()}")
 print(f"   Correctly detected (MLP)  : {len(correct_attack_idx)}")
 print(f"   Shape of X_attacks_clean  : {X_attacks_clean.shape}")
 
 # PART 5: CATEGORY MAPPING (same as Phase 2 & 3)
-# Maps individual attack names → DoS / Probe / R2L / U2R
 # ============================================================
 CATEGORY_MAP = {
     'neptune':'DoS','smurf':'DoS','back':'DoS','teardrop':'DoS',
@@ -169,21 +163,16 @@ ATTACK_CATEGORIES = ['DoS', 'Probe', 'R2L', 'U2R']
 
 cats_mapped = cats_attacked.map(CATEGORY_MAP).fillna('Other')
 
-print(f"\n✅ Category mapping applied")
+print(f"\n Category mapping applied")
 print(f"   Distribution:\n{cats_mapped.value_counts().to_string()}")
 
-# Goal: Compute ASR per attack category, per model,
-#       per attack type, across ALL epsilon values
-# ============================================================
-# ============================================================
+# Goal: Compute ASR per attack category, per model
 
 print("\n" + "=" * 60)
 print("  STEP 4.1 — PER-CLASS VULNERABILITY ANALYSIS")
 print("=" * 60)
 
 # --- 5.1.1 Re-generate adversarial examples for ALL epsilons ---
-# We need per-epsilon adversarial examples for the full curve
-# X_adv_fgsm_02 and X_adv_pgd_02 are only ε=0.2
 
 fgsm_adv_all = {}   # fgsm_adv_all[eps] = X_adv array
 pgd_adv_all  = {}   # pgd_adv_all[eps]  = X_adv array
@@ -197,7 +186,7 @@ for eps in EPSILON_VALUES:
     fgsm_adv_all[eps] = fgsm.generate(
         x=X_attacks_clean, mask=numerical_mask_bool
     )
-    print(f"  ✅ FGSM ε={eps} done — shape: {fgsm_adv_all[eps].shape}")
+    print(f"   FGSM ε={eps} done — shape: {fgsm_adv_all[eps].shape}")
     print(f"  Generating PGD adversarial examples  | ε={eps} ...")
     pgd = ProjectedGradientDescent(
         estimator=art_pt_mlp, eps=eps,
@@ -208,13 +197,12 @@ for eps in EPSILON_VALUES:
     pgd_adv_all[eps] = pgd.generate(
         x=X_attacks_clean, mask=numerical_mask_bool
     )
-    print(f"  ✅ PGD  ε={eps} done — shape: {pgd_adv_all[eps].shape}")
+    print(f"   PGD  ε={eps} done — shape: {pgd_adv_all[eps].shape}")
 
 # --- 5.1.2 Compute Per-Class ASR for each configuration ---
 per_class_records = []
 
 PHASE2_FN = {
-    # False Negatives from Phase 2 baseline (pre-attack)
     'RF':  {'DoS': 1617, 'Probe': 646,  'R2L': 2736, 'U2R': 60},
     'XGB': {'DoS': 985,  'Probe': 711,  'R2L': 2691, 'U2R': 53},
     'MLP': {'DoS': 982,  'Probe': 396,  'R2L': 2184, 'U2R': 42},
@@ -255,7 +243,7 @@ for eps in EPSILON_VALUES:
 
 per_class_df = pd.DataFrame(per_class_records)
         
- # --- 5.1.3 Compute PGD Advantage over FGSM (per category) ---
+ # Compute PGD Advantage over FGSM (per category) ---
 for cat in ATTACK_CATEGORIES:
     for eps in EPSILON_VALUES:
         fgsm_row = per_class_df[
@@ -279,8 +267,6 @@ for cat in ATTACK_CATEGORIES:
                   fgsm_row[f'ASR_{model}'].values[0]
             per_class_df.at[pi, f'PGD_Advantage_{model}'] = round(adv, 2)
 
-        # --- 5.1.4 Critical Threshold Analysis ---
-# At which epsilon does each category first exceed 50% ASR?
 print("\n  CRITICAL THRESHOLD ANALYSIS (ASR ≥ 50%)")
 print("  " + "-" * 55)
 print(f"  {'Category':<8} {'Model':<6} {'FGSM Threshold':>16} {'PGD Threshold':>15}")
@@ -303,7 +289,7 @@ for cat in ATTACK_CATEGORIES:
 
 threshold_df = pd.DataFrame(threshold_records)
 
-# Print summary
+
 for cat in ATTACK_CATEGORIES:
     for model in ['MLP', 'RF', 'XGB']:
         fgsm_t = threshold_df[
@@ -318,7 +304,7 @@ for cat in ATTACK_CATEGORIES:
         ]['Critical_Threshold'].values[0]
         print(f"  {cat:<8} {model:<6} {str(fgsm_t):>16} {str(pgd_t):>15}")
 
-# --- 5.1.5 Link to Phase 2 Blind Spots ---
+#Link to Phase 2 Blind Spots ---
 print("\n  BLIND SPOT AMPLIFICATION (Phase 2 FN → Phase 4 ASR@ε=0.2)")
 print("  " + "-" * 60)
 for model in ['RF', 'XGB', 'MLP']:
@@ -336,10 +322,6 @@ for model in ['RF', 'XGB', 'MLP']:
         print(f"    {cat:<6} → Phase 2 FN: {fn_count:>5} | "
               f"PGD ASR@0.2: {asr_val:.2f}%")
         
-# Goal: Understand WHAT the attacker changed and HOW MUCH
-#       Using both normalized [0,1] and original units
-# ============================================================
-# ============================================================
 
 print("\n" + "=" * 60)
 print("  STEP 4.2 — FEATURE PERTURBATION PROFILING")
@@ -349,7 +331,7 @@ print("=" * 60)
 NUM_FEATURE_NAMES = [f for f, m in
                      zip(feature_names_final, numerical_mask_bool) if m]
 
-# --- 5.2.1 Overall Delta (FGSM vs PGD at ε=0.2) ---
+#Overall Delta (FGSM vs PGD at ε=0.2)
 def compute_delta(X_orig, X_adv, n_num=38):
     """Compute normalized delta for numerical features only."""
     delta_abs  = np.abs(X_adv[:, :n_num] - X_orig[:, :n_num])
@@ -363,9 +345,7 @@ delta_fgsm_abs, delta_fgsm_sign = compute_delta(
 delta_pgd_abs,  delta_pgd_sign  = compute_delta(
     X_attacks_clean, pgd_adv_all[0.2])
 
-# --- 5.2.2 Inverse Transform → Physical Units ---
-# We reconstruct full-size array for inverse_transform
-# (scaler was fitted on numerical features only)
+#Inverse Transform → Physical Units
 def to_physical_delta(X_orig_num, X_adv_num, scaler):
     """
     Convert scaled perturbation to original units.
@@ -384,7 +364,7 @@ phys_pgd  = to_physical_delta(
 mean_phys_fgsm = phys_fgsm.mean(axis=0)
 mean_phys_pgd  = phys_pgd.mean(axis=0)
 
-# --- 5.2.3 Build Summary DataFrame (Top 10) ---
+#Build Summary DataFrame (Top 10)
 feat_df = pd.DataFrame({
     'Feature'           : NUM_FEATURE_NAMES,
     'FGSM_Delta_Norm'   : delta_fgsm_abs,
@@ -415,18 +395,18 @@ for _, row in TOP5.iterrows():
           f"PGD:  {row['PGD_Physical']:>+12.2f}")
 
 
-# --- 5.2.4 Verify Categorical Mask = 0 ---
+#Verify Categorical Mask = 0
 cat_delta_fgsm = np.abs(
     fgsm_adv_all[0.2][:, 38:] - X_attacks_clean[:, 38:]).max()
 cat_delta_pgd  = np.abs(
     pgd_adv_all[0.2][:, 38:]  - X_attacks_clean[:, 38:]).max()
 print(f"\n  Categorical Mask Verification:")
 print(f"   Max delta (FGSM, cat cols): {cat_delta_fgsm:.6f} "
-      f"{'✅ Protected' if cat_delta_fgsm < 1e-6 else '❌ MASK FAILED'}")
+      f"{' Protected' if cat_delta_fgsm < 1e-6 else '❌ MASK FAILED'}")
 print(f"   Max delta (PGD,  cat cols): {cat_delta_pgd:.6f}  "
-      f"{'✅ Protected' if cat_delta_pgd  < 1e-6 else '❌ MASK FAILED'}")
+      f"{' Protected' if cat_delta_pgd  < 1e-6 else '❌ MASK FAILED'}")
 
-# --- 5.2.5 Per-Category Feature Analysis (DoS vs R2L) ---
+#Per-Category Feature Analysis (DoS vs R2L)
 print("\n  PER-CATEGORY FEATURE PERTURBATION (Top 3, ε=0.2)")
 print("  " + "-" * 55)
 
@@ -470,40 +450,33 @@ for cat in ATTACK_CATEGORIES:
 
 per_cat_feat_df = pd.DataFrame(per_cat_feat_records)
 
-# --- 5.2.6 Save ---
+
 feat_df.to_csv(f'{OUTPUT_PATH}/phase4_feature_perturbation.csv', index=False)
 per_cat_feat_df.to_csv(
     f'{OUTPUT_PATH}/phase4_per_cat_feature.csv', index=False)
 
-print(f"\n✅ Saved → phase4_feature_perturbation.csv")
-print(f"✅ Saved → phase4_per_cat_feature.csv")
-
-# Goal: Rank models using a quantitative robustness score
-#       + False Positive analysis after attack
-# ============================================================
-# ============================================================
+print(f"\n Saved → phase4_feature_perturbation.csv")
+print(f" Saved → phase4_per_cat_feature.csv")
 
 print("\n" + "=" * 60)
 print("  STEP 4.3 — ROBUSTNESS RANKING SYNTHESIS")
 print("=" * 60)
 
-# --- 5.3.1 Baseline Accuracies (from Phase 2) ---
+#Baseline Accuracies (from Phase 2)
 BASELINE = {
     'RF' : 0.7642,
     'XGB': 0.7909,
     'MLP': 0.8062,
 }
 
-# --- 5.3.2 ASR at ε=0.2 (PGD, from Phase 3 all_results) ---
+#5.3.2 ASR at ε=0.2 (PGD, from Phase 3 all_results)
 ASR_PGD_02 = {
     'RF' : 0.3741,
     'XGB': 0.3391,
     'MLP': 0.9674,
 }
 
-# --- 5.3.3 Robustness Score Formula ---
-# Robustness Score = Baseline_Accuracy × (1 - ASR_PGD@ε=0.2)
-# Intuition: a model that is both accurate AND resistant scores high
+#5.3.3 Robustness Score Formula
 ranking_records = []
 for model in ['RF', 'XGB', 'MLP']:
     score = BASELINE[model] * (1 - ASR_PGD_02[model])
@@ -524,7 +497,7 @@ print("  Formula: Score = Baseline_Acc × (1 - ASR_PGD@0.2)")
 print("  " + "-" * 55)
 print(ranking_df.to_string(index=False))
 
-# --- 5.3.4 Practical Recommendations ---
+
 print("\n  DEPLOYMENT RECOMMENDATIONS")
 print("  " + "-" * 55)
 recs = {
@@ -541,12 +514,7 @@ for model, (env, cond, reason) in recs.items():
     print(f"    Condition : {cond}")
     print(f"    Rationale : {reason}")
 
-# --- 5.3.5 FALSE POSITIVE ANALYSIS ---
-# "The Hidden Cost" — Normal traffic misclassified as Attack
-# after adversarial perturbation.
-# NOTE: We apply the adversarial perturbation that was CRAFTED
-# on attack samples, but now we evaluate it on normal samples
-# to measure collateral damage.
+# --- 5.3.5 FALSE POSITIVE ANALYSIS
 print("\n  FALSE POSITIVE ANALYSIS AFTER ATTACK")
 print("  " + "-" * 55)
 
@@ -561,8 +529,6 @@ fp_base_xgb = (np.argmax(art_xgb.predict(X_normal),    axis=1) == 1).mean()
 fp_base_mlp = (np.argmax(art_pt_mlp.predict(X_normal), axis=1) == 1).mean()
 
 # Generate adversarial perturbation on NORMAL samples (ε=0.2)
-# This simulates what happens when the IDS receives perturbed
-# normal packets — does it start over-alerting?
 print("\n  Generating adversarial perturbation on normal samples...")
 
 fgsm_normal = FastGradientMethod(
@@ -616,32 +582,31 @@ for _, row in fpr_df.iterrows():
           f"{row['FPR_FGSM']:>9.2f}% "
           f"{row['FPR_PGD']:>9.2f}% "
           f"{row['Increase_PGD']:>+7.2f}%")
-# --- 5.3.6 Master Ranking Table ---
-# Merge ranking + FPR into one final table
+# --- 5.3.6 Master Ranking Table
 master_ranking = ranking_df.merge(fpr_df, on='Model')
 master_ranking.to_csv(f'{OUTPUT_PATH}/phase4_ranking.csv', index=False)
 fpr_df.to_csv(f'{OUTPUT_PATH}/phase4_fpr.csv', index=False)
 
-print(f"\n✅ Saved → phase4_ranking.csv")
-print(f"✅ Saved → phase4_fpr.csv")
+print(f"\n Saved → phase4_ranking.csv")
+print(f" Saved → phase4_fpr.csv")
 
 print("\n" + "=" * 60)
 print("  PHASE 4 — COMPLETE SUMMARY")
 print("=" * 60)
 
-print("\n  📁 Output Files:")
+print("\n   Output Files:")
 for f in os.listdir(OUTPUT_PATH):
     size = os.path.getsize(f'{OUTPUT_PATH}/{f}')
-    print(f"   ✅ {f:<45} ({size} bytes)")
+    print(f"    {f:<45} ({size} bytes)")
 
-print("\n  🏆 Final Robustness Ranking:")
+print("\n   Final Robustness Ranking:")
 for _, row in ranking_df.iterrows():
     print(f"   #{int(row['Rank'])} {row['Model']:<4} — "
           f"Score: {row['Robustness_Score']:.4f} | "
           f"Baseline: {row['Baseline_Acc']}% | "
           f"ASR(PGD@0.2): {row['ASR_PGD_0.2']}%")
 
-print("\n  🔍 Key Findings:")
+print("\n   Key Findings:")
 print("   1. MLP most vulnerable (White-box): ASR up to 97.43% (FGSM)")
 print("   2. RF most robust to Transfer Attacks (Black-box)")
 print("   3. PGD > FGSM on tree-based models at high epsilon")
@@ -651,5 +616,5 @@ print("   5. False Positives: MLP shows significant FPR increase "
       "under PGD (analyst overload risk)")
 
 print("\n" + "=" * 60)
-print("  ✅ PHASE 4 COMPLETE — READY FOR PHASE 5 (VISUALIZATION)")
+print("   PHASE 4 COMPLETE — READY FOR PHASE 5 (VISUALIZATION)")
 print("=" * 60)
