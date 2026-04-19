@@ -32,6 +32,24 @@ independently after installing the required dependencies.
 
 ---
 
+## Key Results (Summary)
+
+| Model | Baseline Accuracy | ASR (PGD @ ε = 0.2) | Robustness Score |
+|------|-------------------|---------------------|------------------|
+| Random Forest | 76.42% | 37.41% | 0.4783 |
+| XGBoost | 79.09% | 33.91% | 0.5227 |
+| MLP | 80.62% | 96.74% | 0.0263 |
+
+---
+
+## Pipeline Artifacts
+Pre-trained models and preprocessed data are available 
+upon request. 
+Dataset: NSL-KDD — Download from:
+https://www.kaggle.com/datasets/hassan06/nslkdd
+
+---
+
 ## Requirements
 The required Python libraries are listed in `requirements.txt`.
 
